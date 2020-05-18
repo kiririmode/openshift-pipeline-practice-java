@@ -94,6 +94,17 @@ pipeline {
                 sleep 5
                 rc = openshift.selector("rc", "${app_name}-${dc_version}").object()
               }
+
+              def rt = openshift.selector("route", "${app_name}").object()
+              def url = rt.spec.host
+              echo "check ${url}"
+              while (true) {
+                def app_status = sh(returnStdout: true, script: "curl ${url}/hello -o /dev/null -w '%{http_code}' -s").trim()
+                if(app_status == "200") {
+                  break;
+                }
+                sleep 5
+              }
             }
           }
         }
